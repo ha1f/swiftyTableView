@@ -18,38 +18,69 @@ class TableViewDataSource<T: UITableViewCell, U>: NSObject, UITableViewDataSourc
     private var cellIdentifierAtIndexPath: ((IndexPath) -> (String))?
     private var cellConstructor: ((T, U, IndexPath) -> ())?
     
-    private var _sections = [SectionData<U>]([SectionData(title: "", items: [])]) {
-        didSet {
-            updateObserver?(oldValue, _sections)
-        }
-    }
+    private var _sections = [SectionData<U>]([SectionData(title: "", items: [])])
     
-    var updateObserver: (([SectionData<U>], [SectionData<U>]) -> ())?
+    private weak var tableView: UITableView?
     
-    func setup(cellIdentifierAtIndexPath: @escaping ((IndexPath) -> (String)), cellConstructor: @escaping ((T, U, IndexPath) -> ())) {
+    func setup(cellIdentifierAtIndexPath: @escaping ((IndexPath) -> (String)), cellConstructor: @escaping ((T, U, IndexPath) -> ())) -> TableViewDataSource {
         self.cellIdentifierAtIndexPath = cellIdentifierAtIndexPath
         self.cellConstructor = cellConstructor
+        return self
     }
     
-    func setup(cellIdentifier: String, cellConstructor: @escaping ((T, U, IndexPath) -> ())) {
+    func setup(cellIdentifier: String, cellConstructor: @escaping ((T, U, IndexPath) -> ())) -> TableViewDataSource {
         self.cellIdentifierAtIndexPath = { _ in cellIdentifier }
         self.cellConstructor = cellConstructor
+        return self
+    }
+    
+    func bindTo(tableView: UITableView?) {
+        tableView?.dataSource = self
+        self.tableView = tableView
+    }
+    
+    private func updateTableView(exec: (UITableView) -> ()) {
+        guard let tableView = tableView else {
+            return
+        }
+        tableView.beginUpdates()
+        exec(tableView)
+        tableView.endUpdates()
     }
     
     // item1つ
     func append(_ item: U, section: Int = 0) {
         _sections[section].items.append(item)
+        let indexPath = IndexPath(row: self._sections[section].items.count - 1, section: section)
+        updateTableView { tableView in
+            tableView.insertRows(at: [indexPath], with: .automatic)
+        }
     }
     func insert(_ item: U, row: Int, section: Int = 0) {
         _sections[section].items.insert(item, at: row)
+        updateTableView { tableView in
+            tableView.insertRows(at: [IndexPath(row: row, section: section)], with: .automatic)
+        }
     }
     func insert(_ item: U, indexPath: IndexPath) {
-        _sections[indexPath.section].items.insert(item, at: indexPath.row)
+        self.insert(item, row: indexPath.row, section: indexPath.section)
+    }
+    func delete(at indexPath: IndexPath) {
+        _sections[indexPath.section].items.remove(at: indexPath.row)
+        updateTableView { tableView in
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+        }
+    }
+    func delete(row: Int, section: Int = 0) {
+        self.delete(at: IndexPath(row: row, section: section))
     }
     
     // itemの配列
     func setItems(_ items: [U], section: Int = 0) {
         _sections[section].items = items
+        updateTableView { tableView in
+            tableView.reloadSections([section], with: .automatic)
+        }
     }
     func setTitle(_ title: String, section: Int = 0) {
         _sections[section].title = title
@@ -58,13 +89,26 @@ class TableViewDataSource<T: UITableViewCell, U>: NSObject, UITableViewDataSourc
     // sectionまるごと
     func insert(_ sectionData: SectionData<U>, at section: Int) {
         _sections.insert(sectionData, at: section)
+        updateTableView { tableView in
+            tableView.insertSections([section], with: .automatic)
+        }
     }
     func append(_ sectionData: SectionData<U>) {
         _sections.append(sectionData)
+        updateTableView { tableView in
+            tableView.insertSections([_sections.count - 1], with: .automatic)
+        }
+    }
+    func delete(section: Int) {
+        _sections.remove(at: section)
+        updateTableView { tableView in
+            tableView.deleteSections([section], with: .automatic)
+        }
     }
     
     func removeAll() {
         _sections = [SectionData<U>]([SectionData(title: "", items: [])])
+        tableView?.reloadData()
     }
     
     // 以下、dataSource用
