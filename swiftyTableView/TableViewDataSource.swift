@@ -34,8 +34,8 @@ class TableViewDataSource<T: UITableViewCell, U>: NSObject, UITableViewDataSourc
         return self
     }
     
-    func bindTo(tableView: UITableView?) {
-        tableView?.dataSource = self
+    func bindTo(_ tableView: UITableView) {
+        tableView.dataSource = self
         self.tableView = tableView
     }
     
@@ -75,18 +75,34 @@ class TableViewDataSource<T: UITableViewCell, U>: NSObject, UITableViewDataSourc
         self.delete(at: IndexPath(row: row, section: section))
     }
     
-    // itemの配列
+    // itemの配列(itemをまとめて)
+    func append(contentsOf items: [U], section: Int = 0) {
+        let maxIndex = self._sections[section].items.count
+        _sections[section].items += items
+        let indexPaths = (maxIndex..<(maxIndex+items.count)).map { IndexPath(row: $0, section: section) }
+        updateTableView { tableView in
+            tableView.insertRows(at: indexPaths, with: .automatic)
+        }
+    }
+    func insert(contentsOf items: [U], at row: Int, section: Int = 0) {
+        _sections[section].items.insert(contentsOf: items, at: row)
+        let indexPaths = (row..<(row+items.count)).map { IndexPath(row: $0, section: section) }
+        updateTableView { tableView in
+            tableView.insertRows(at: indexPaths, with: .automatic)
+        }
+    }
+    
+    // sectionまるごと
+    func setTitle(_ title: String, section: Int = 0) {
+        _sections[section].title = title
+        tableView?.reloadSectionIndexTitles()
+    }
     func setItems(_ items: [U], section: Int = 0) {
         _sections[section].items = items
         updateTableView { tableView in
             tableView.reloadSections([section], with: .automatic)
         }
     }
-    func setTitle(_ title: String, section: Int = 0) {
-        _sections[section].title = title
-    }
-    
-    // sectionまるごと
     func insert(_ sectionData: SectionData<U>, at section: Int) {
         _sections.insert(sectionData, at: section)
         updateTableView { tableView in
