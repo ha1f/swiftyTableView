@@ -20,12 +20,12 @@ class ViewController: UIViewController {
         tableView.frame = self.view.frame
         self.view.addSubview(tableView)
         
-        tableView.register(SampleTableViewCell.self, forCellReuseIdentifier: "cell")
+        tableView.register(SampleTableViewCell.self, forCellReuseIdentifier: "SampleTableViewCell")
         
-        dataSource.setup(cellIdentifier: "cell") { cell, data, indexPath in
+        dataSource.setup(cellIdentifier: "SampleTableViewCell") { cell, data, indexPath in
             cell.textLabel?.text = data
         }.bindTo(tableView)
-        dataSource.setItems(["い", "ろ"])
+        dataSource.setItems(["い", "ろ", "は", "に", "ほ", "へ", "と"])
     }
     
     // 以下はサンプル用
@@ -44,6 +44,10 @@ class ViewController: UIViewController {
             },
             Timer.scheduledTimer(withTimeInterval: 7, repeats: true) {[weak self] _ in
                 self?.dataSource.delete(section: 0)
+            },
+            Timer.scheduledTimer(withTimeInterval: 1.7, repeats: true) {[weak self] _ in
+                self?.dataSource.insertAnimation = .middle
+                self?.dataSource.deleteAnimation = .middle
             }
         ]
     }

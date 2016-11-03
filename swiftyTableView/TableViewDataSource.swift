@@ -22,6 +22,10 @@ class TableViewDataSource<T: UITableViewCell, U>: NSObject, UITableViewDataSourc
     
     private weak var tableView: UITableView?
     
+    var insertAnimation = UITableViewRowAnimation.automatic
+    var deleteAnimation = UITableViewRowAnimation.automatic
+    var reloadSectionAnimation = UITableViewRowAnimation.automatic
+    
     func setup(cellIdentifierAtIndexPath: @escaping ((IndexPath) -> (String)), cellConstructor: @escaping ((T, U, IndexPath) -> ())) -> TableViewDataSource {
         self.cellIdentifierAtIndexPath = cellIdentifierAtIndexPath
         self.cellConstructor = cellConstructor
@@ -53,13 +57,13 @@ class TableViewDataSource<T: UITableViewCell, U>: NSObject, UITableViewDataSourc
         _sections[section].items.append(item)
         let indexPath = IndexPath(row: self._sections[section].items.count - 1, section: section)
         updateTableView { tableView in
-            tableView.insertRows(at: [indexPath], with: .automatic)
+            tableView.insertRows(at: [indexPath], with: insertAnimation)
         }
     }
     func insert(_ item: U, row: Int, section: Int = 0) {
         _sections[section].items.insert(item, at: row)
         updateTableView { tableView in
-            tableView.insertRows(at: [IndexPath(row: row, section: section)], with: .automatic)
+            tableView.insertRows(at: [IndexPath(row: row, section: section)], with: insertAnimation)
         }
     }
     func insert(_ item: U, indexPath: IndexPath) {
@@ -68,7 +72,7 @@ class TableViewDataSource<T: UITableViewCell, U>: NSObject, UITableViewDataSourc
     func delete(at indexPath: IndexPath) {
         _sections[indexPath.section].items.remove(at: indexPath.row)
         updateTableView { tableView in
-            tableView.deleteRows(at: [indexPath], with: .automatic)
+            tableView.deleteRows(at: [indexPath], with: deleteAnimation)
         }
     }
     func delete(row: Int, section: Int = 0) {
@@ -81,16 +85,18 @@ class TableViewDataSource<T: UITableViewCell, U>: NSObject, UITableViewDataSourc
         _sections[section].items += items
         let indexPaths = (maxIndex..<(maxIndex+items.count)).map { IndexPath(row: $0, section: section) }
         updateTableView { tableView in
-            tableView.insertRows(at: indexPaths, with: .automatic)
+            tableView.insertRows(at: indexPaths, with: insertAnimation)
         }
     }
     func insert(contentsOf items: [U], at row: Int, section: Int = 0) {
         _sections[section].items.insert(contentsOf: items, at: row)
         let indexPaths = (row..<(row+items.count)).map { IndexPath(row: $0, section: section) }
         updateTableView { tableView in
-            tableView.insertRows(at: indexPaths, with: .automatic)
+            tableView.insertRows(at: indexPaths, with: insertAnimation)
         }
     }
+    
+    // delete [IndexPath] に対応したい
     
     // sectionまるごと
     func setTitle(_ title: String, section: Int = 0) {
@@ -100,25 +106,25 @@ class TableViewDataSource<T: UITableViewCell, U>: NSObject, UITableViewDataSourc
     func setItems(_ items: [U], section: Int = 0) {
         _sections[section].items = items
         updateTableView { tableView in
-            tableView.reloadSections([section], with: .automatic)
+            tableView.reloadSections([section], with: reloadSectionAnimation)
         }
     }
     func insert(_ sectionData: SectionData<U>, at section: Int) {
         _sections.insert(sectionData, at: section)
         updateTableView { tableView in
-            tableView.insertSections([section], with: .automatic)
+            tableView.insertSections([section], with: insertAnimation)
         }
     }
     func append(_ sectionData: SectionData<U>) {
         _sections.append(sectionData)
         updateTableView { tableView in
-            tableView.insertSections([_sections.count - 1], with: .automatic)
+            tableView.insertSections([_sections.count - 1], with: insertAnimation)
         }
     }
     func delete(section: Int) {
         _sections.remove(at: section)
         updateTableView { tableView in
-            tableView.deleteSections([section], with: .automatic)
+            tableView.deleteSections([section], with: deleteAnimation)
         }
     }
     
