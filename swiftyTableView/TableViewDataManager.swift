@@ -1,5 +1,5 @@
 //
-//  TableViewDataSource.swift
+//  TableViewDataManager.swift
 //  swiftyTableView
 //
 //  Created by はるふ on 2016/11/02.
@@ -13,7 +13,7 @@ struct SectionData<U> {
     var items: [U]
 }
 
-class TableViewDataSource<T: UITableViewCell, U>: NSObject, UITableViewDataSource {
+class TableViewDataManager<T: UITableViewCell, U>: NSObject, UITableViewDataSource {
     
     private var cellIdentifierAtIndexPath: ((IndexPath) -> (String))?
     private var cellConstructor: ((T, U, IndexPath) -> ())?
@@ -26,13 +26,13 @@ class TableViewDataSource<T: UITableViewCell, U>: NSObject, UITableViewDataSourc
     var deleteAnimation = UITableViewRowAnimation.automatic
     var reloadSectionAnimation = UITableViewRowAnimation.automatic
     
-    func setup(cellIdentifierAtIndexPath: @escaping ((IndexPath) -> (String)), cellConstructor: @escaping ((T, U, IndexPath) -> ())) -> TableViewDataSource {
+    func setup(cellIdentifierAtIndexPath: @escaping ((IndexPath) -> (String)), cellConstructor: @escaping ((T, U, IndexPath) -> ())) -> Self {
         self.cellIdentifierAtIndexPath = cellIdentifierAtIndexPath
         self.cellConstructor = cellConstructor
         return self
     }
     
-    func setup(cellIdentifier: String, cellConstructor: @escaping ((T, U, IndexPath) -> ())) -> TableViewDataSource {
+    func setup(cellIdentifier: String, cellConstructor: @escaping ((T, U, IndexPath) -> ())) -> Self {
         self.cellIdentifierAtIndexPath = { _ in cellIdentifier }
         self.cellConstructor = cellConstructor
         return self

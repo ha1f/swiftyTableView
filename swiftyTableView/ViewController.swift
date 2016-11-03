@@ -12,7 +12,7 @@ class ViewController: UIViewController {
     
     var tableView = UITableView()
     
-    let dataSource = TableViewDataSource<SampleTableViewCell, String>()
+    let dataManager = TableViewDataManager<SampleTableViewCell, String>()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,10 +22,10 @@ class ViewController: UIViewController {
         
         tableView.register(SampleTableViewCell.self, forCellReuseIdentifier: "SampleTableViewCell")
         
-        dataSource.setup(cellIdentifier: "SampleTableViewCell") { cell, data, indexPath in
+        dataManager.setup(cellIdentifier: "SampleTableViewCell") { cell, data, indexPath in
             cell.textLabel?.text = data
         }.bindTo(tableView)
-        dataSource.setItems(["い", "ろ", "は", "に", "ほ", "へ", "と"])
+        dataManager.setItems(["い", "ろ", "は", "に", "ほ", "へ", "と"])
     }
     
     // 以下はサンプル用
@@ -33,21 +33,21 @@ class ViewController: UIViewController {
     private func setSampleTimers() {
         sampleTimers = [
             Timer.scheduledTimer(withTimeInterval: 1, repeats: true) {[weak self] _ in
-                self?.dataSource.append("に")
-                self?.dataSource.insert("は", row: 2)
+                self?.dataManager.append("に")
+                self?.dataManager.insert("は", row: 2)
             },
             Timer.scheduledTimer(withTimeInterval: 1.2, repeats: true) {[weak self] _ in
-                self?.dataSource.delete(row: 0)
+                self?.dataManager.delete(row: 0)
             },
             Timer.scheduledTimer(withTimeInterval: 5, repeats: true) {[weak self] _ in
-                self?.dataSource.append(SectionData(title: "動物", items: ["ねこ", "いぬ", "くじら"]))
+                self?.dataManager.append(SectionData(title: "動物", items: ["ねこ", "いぬ", "くじら"]))
             },
             Timer.scheduledTimer(withTimeInterval: 7, repeats: true) {[weak self] _ in
-                self?.dataSource.delete(section: 0)
+                self?.dataManager.delete(section: 0)
             },
             Timer.scheduledTimer(withTimeInterval: 1.7, repeats: true) {[weak self] _ in
-                self?.dataSource.insertAnimation = .middle
-                self?.dataSource.deleteAnimation = .middle
+                self?.dataManager.insertAnimation = .middle
+                self?.dataManager.deleteAnimation = .middle
             }
         ]
     }
